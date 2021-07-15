@@ -92,8 +92,10 @@ void TaskScheduler::stopEventLoop()
 {
 	fTaskLoop = 0;
 
-	THREAD_JOIN(&fThread);
-	THREAD_DESTROY(&fThread);
+	if (fThread) {
+		THREAD_JOIN(&fThread);
+		THREAD_DESTROY(&fThread);
+	}
 }
 
 void TaskScheduler::doEventLoop() 
