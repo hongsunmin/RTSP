@@ -267,7 +267,7 @@ void JPEGRTPSource::processFrame(RTPPacketBuffer *packet)
 	memcpy(&jpeg_buf[MAX_JPEG_HEADER_SIZE], buf, len);
 
 	uint8_t *buf_ptr = &jpeg_buf[MAX_JPEG_HEADER_SIZE];
-	int64_t media_timestamp = packet->extTimestamp() == 0 ? getMediaTimestamp(packet->timestamp()) : packet->extTimestamp();
+	int64_t timestamp = packet->extTimestamp() == 0 ? getRealTimestamp(packet->timestamp()) : packet->extTimestamp();
 
 	unsigned char* qtables = NULL;
 	unsigned qtlen = 0;
@@ -391,8 +391,8 @@ void JPEGRTPSource::processFrame(RTPPacketBuffer *packet)
 
 	if (packet->markerBit()) {
 		if (fFrameHandlerFunc)
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
-		resetFrameBuf();
+			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+		resetFrameBuffer();
 	}
 
 	delete[] jpeg_buf;

@@ -38,11 +38,11 @@ RTSPLiveStreamer *streamers[NUM_STREAMER] = { NULL };
 void addServerSessions()
 {
 	streamers[0] = new RTSPLiveStreamer();
-	streamers[0]->open("rtsp://172.30.1.213/live/main", 0, "stream1");
+	streamers[0]->open("rtsp://127.0.0.1:8554/h265ESVideoTest", 0, "stream1");
 	streamers[0]->run();
 
 	streamers[1] = new RTSPLiveStreamer();
-	streamers[1]->open("rtsp://admin:1234@172.30.10.103/h264", 0, "stream2");
+	streamers[1]->open("rtsp://admin:antsANTS@192.168.140.69/0", 0, "stream2");
 	streamers[1]->run();
 }
 
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	addServerSessions();
 
 	RTSPServer *rtspServer = RTSPServer::instance();
-	rtspServer->startServer(8554);
+	rtspServer->startServer(554);
 
 	char c;
 	while (c = mygetch() != 'q') {

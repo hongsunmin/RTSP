@@ -55,10 +55,10 @@ protected:
 
 protected:
 	void copyToFrameBuffer(uint8_t *buf, int len);
-	void resetFrameBuf();
+	void resetFrameBuffer();
 
 protected:
-	uint64_t getMediaTimestamp(uint32_t timestamp);
+	uint64_t getRealTimestamp(uint32_t timestamp);
 
 protected:
 	ReorderingPacketBuffer	*fReorderingBuffer;
@@ -84,8 +84,8 @@ protected:
 	uint32_t				fSvrAddr;
 	time_t					fLastRtcpSendTime;
 	
-	uint8_t*			fFrameBuf;
-	int					fFrameBufPos;
+	uint8_t*			fFrameBuffer;
+	int					fFrameBufferPos;
 	FrameHandlerFunc	fFrameHandlerFunc;
 	void*				fFrameHandlerFuncData;
 

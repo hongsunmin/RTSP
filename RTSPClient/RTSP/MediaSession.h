@@ -148,6 +148,9 @@ public:
 	char const* fmtp_config() const { return fConfig; }
 	char const* fmtp_mode() const { return fMode; }
 	char const* fmtp_spropparametersets() const { return fSpropParameterSets; }
+	char const* fmtp_spropVps() const { return fPropVps; }
+	char const* fmtp_spropSps() const { return fPropSps; }
+	char const* fmtp_spropPps() const { return fPropPps; }
 
 	unsigned int connectionEndpointAddress() const; // Converts "fConnectionEndpointName" to an address (or 0 if unknown)
 	void setDestinations(unsigned int defaultDestAddress);
@@ -220,6 +223,7 @@ protected:
 	unsigned fSizelength, fStreamstateindication, fStreamtype;
 	bool fCpresent, fRandomaccessindication;
 	char *fConfig, *fMode, *fSpropParameterSets;
+	char *fPropVps, *fPropSps, *fPropPps;	// H.265
 
 	double fPlayStartTime;
 	double fPlayEndTime;

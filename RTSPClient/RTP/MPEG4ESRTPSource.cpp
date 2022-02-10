@@ -17,7 +17,7 @@ void MPEG4ESRTPSource::processFrame(RTPPacketBuffer *packet)
 {
 	uint8_t *buf = (uint8_t *)packet->payload();
 	int len = packet->payloadLen();
-	int64_t media_timestamp = packet->extTimestamp() == 0 ? getMediaTimestamp(packet->timestamp()) : packet->extTimestamp();
+	int64_t timestamp = packet->extTimestamp() == 0 ? getRealTimestamp(packet->timestamp()) : packet->extTimestamp();
 
 	if (len >= 4) {
 		if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1)
@@ -35,8 +35,8 @@ void MPEG4ESRTPSource::processFrame(RTPPacketBuffer *packet)
 
 	if (packet->markerBit()) {
 		if (fFrameHandlerFunc)
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
-		resetFrameBuf();
+			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+		resetFrameBuffer();
 		fBeginFrame = false;
 	}
 }

@@ -14,7 +14,7 @@ void AC3RTPSource::processFrame(RTPPacketBuffer *packet)
 {
 	uint8_t *buf = packet->payload();
 	int len = packet->payloadLen();
-	int64_t media_timestamp = packet->extTimestamp() == 0 ? getMediaTimestamp(packet->timestamp()) : packet->extTimestamp();
+	int64_t timestamp = packet->extTimestamp() == 0 ? getRealTimestamp(packet->timestamp()) : packet->extTimestamp();
 
 	unsigned char* headerStart = buf;
 
@@ -31,8 +31,8 @@ void AC3RTPSource::processFrame(RTPPacketBuffer *packet)
 	// In case the sender did not set the "M" bit correctly, we also test for FT == 0:
 	if (packet->markerBit() || FT == 0) {
 		if (fFrameHandlerFunc)
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
-		resetFrameBuf();
+			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+		resetFrameBuffer();
 		fBeginFrame = false;
 	}
 }

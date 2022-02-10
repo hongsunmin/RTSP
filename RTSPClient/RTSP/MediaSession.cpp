@@ -495,6 +495,7 @@ fObjecttype(0), fOctetalign(0), fProfile_level_id(0), fRobustsorting(0),
 fSizelength(0), fStreamstateindication(0), fStreamtype(0),
 fCpresent(false), fRandomaccessindication(false),
 fConfig(NULL), fMode(NULL), fSpropParameterSets(NULL),
+fPropVps(NULL), fPropSps(NULL), fPropPps(NULL),
 fPlayStartTime(0.0), fPlayEndTime(0.0),
 fVideoWidth(0), fVideoHeight(0), fVideoFPS(0), fNumChannels(1), fScale(1.0f), fNPT_PTS_Offset(0.0f),
 fRTPSource(NULL)
@@ -509,6 +510,7 @@ MediaSubsession::~MediaSubsession()
 	delete[] fConnectionEndpointName; delete[] fSavedSDPLines;
 	delete[] fMediumName; delete[] fCodecName; delete[] fProtocolName;
 	delete[] fControlPath; delete[] fConfig; delete[] fMode; delete[] fSpropParameterSets;
+	delete[] fPropVps; delete[] fPropSps; delete[] fPropPps;
 
 	if (sessionId)
 		delete[] sessionId;
@@ -819,6 +821,12 @@ bool MediaSubsession::parseSDPAttribute_fmtp(char const* sdpLine)
 			} else if (sscanf(sdpLine, " sprop-parameter-sets = %[^; \t\r\n]", valueStr) == 1) {
 				// Note: We used "sdpLine" here, because the value is case-sensitive.
 				delete[] fSpropParameterSets; fSpropParameterSets = strDup(valueStr);
+			} else if (sscanf(sdpLine, " sprop-vps=%[^; \t\r\n]", valueStr) == 1) {
+				delete[] fPropVps; fPropVps = strDup(valueStr);
+			} else if (sscanf(sdpLine, " sprop-sps=%[^; \t\r\n]", valueStr) == 1) {
+				delete[] fPropSps; fPropSps = strDup(valueStr);
+			} else if (sscanf(sdpLine, " sprop-pps=%[^; \t\r\n]", valueStr) == 1) {
+				delete[] fPropPps; fPropPps = strDup(valueStr);
 			} else {
 				// Some of the above parameters are bool.  Check whether the parameter
 				// names appear alone, without a "= 1" at the end:

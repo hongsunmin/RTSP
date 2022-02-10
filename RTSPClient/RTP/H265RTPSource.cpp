@@ -22,7 +22,7 @@ void H265RTPSource::processFrame(RTPPacketBuffer* packet)
 	uint8_t* headerStart = buf;
 	bool isCompleteFrame = false;
 
-	int64_t media_timestamp = packet->extTimestamp() == 0 ? getMediaTimestamp(packet->timestamp()) : packet->extTimestamp();
+	int64_t timestamp = packet->extTimestamp() == 0 ? getRealTimestamp(packet->timestamp()) : packet->extTimestamp();
 
 	uint8_t nalUnitType = (headerStart[0] & 0x7E) >> 1;
 
@@ -49,8 +49,8 @@ void H265RTPSource::processFrame(RTPPacketBuffer* packet)
 			buf_ptr += nalUSize; len -= nalUSize;
 
 			if (fFrameHandlerFunc)
-				fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
-			resetFrameBuf();
+				fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+			resetFrameBuffer();
 		}
 	} break;
 	case 49: {	// Fragmentation Unit (FU)
@@ -83,7 +83,7 @@ void H265RTPSource::processFrame(RTPPacketBuffer* packet)
 
 	if (isCompleteFrame) {
 		if (fFrameHandlerFunc)
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
-		resetFrameBuf();
+			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+		resetFrameBuffer();
 	}
 }

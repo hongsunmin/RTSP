@@ -34,8 +34,8 @@ fRtpHandlerFunc(NULL), fRtpHandlerFuncData(NULL), fRtcpHandlerFunc(NULL), fRtcpH
 	else if (!strcmp(subsession.mediumName(), "audio"))
 		fFrameType = FRAME_TYPE_AUDIO;
 
-	fFrameBuf = new uint8_t[FRAME_BUFFER_SIZE];
-	fFrameBufPos = 0;
+	fFrameBuffer = new uint8_t[FRAME_BUFFER_SIZE];
+	fFrameBufferPos = 0;
 
 	fLastSeqNum = fLastSeqNum2 = 0;
 	fLastTimestamp = 0;
@@ -89,7 +89,7 @@ RTPSource::~RTPSource()
 	DELETE_OBJECT(fRtcpInstance);
 
 	DELETE_ARRAY(fRecvBuf);
-	DELETE_ARRAY(fFrameBuf);
+	DELETE_ARRAY(fFrameBuffer);
 	DELETE_ARRAY(fCodecName);
 	DELETE_ARRAY(fExtraData);
 	DELETE_ARRAY(fTrackId);
@@ -240,15 +240,15 @@ void RTPSource::processFrame(RTPPacketBuffer *packet)
 {
 	uint8_t *buf = (uint8_t *)packet->payload();
 	int len = packet->payloadLen();
-	int64_t media_timestamp = packet->extTimestamp() == 0 ? getMediaTimestamp(packet->timestamp()) : packet->extTimestamp();
+	int64_t timestamp = packet->extTimestamp() == 0 ? getRealTimestamp(packet->timestamp()) : packet->extTimestamp();
 
 	copyToFrameBuffer(buf, len);
 
 	if (packet->markerBit() == 1 || fLastTimestamp != packet->timestamp()) {
 		if (fFrameHandlerFunc) {
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
+			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
 		}
-		resetFrameBuf();
+		resetFrameBuffer();
 	}
 }
 
@@ -350,20 +350,20 @@ void RTPSource::sendRtcpReport(char *buf, int len)
 
 void RTPSource::copyToFrameBuffer(uint8_t *buf, int len)
 {
-	if (fFrameBufPos+len >= FRAME_BUFFER_SIZE) {
+	if (fFrameBufferPos+len >= FRAME_BUFFER_SIZE) {
 		DPRINTF("RTP Frame Buffer overflow %s\n", fCodecName);
-		fFrameBufPos = 0;
+		fFrameBufferPos = 0;
 	}
-	memmove(&fFrameBuf[fFrameBufPos], buf, len);
-	fFrameBufPos += len;
+	memmove(&fFrameBuffer[fFrameBufferPos], buf, len);
+	fFrameBufferPos += len;
 }
 
-void RTPSource::resetFrameBuf()
+void RTPSource::resetFrameBuffer()
 {
-	fFrameBufPos = 0;
+	fFrameBufferPos = 0;
 }
 
-uint64_t RTPSource::getMediaTimestamp(uint32_t timestamp)
+uint64_t RTPSource::getRealTimestamp(uint32_t timestamp)
 {
 	uint64_t msec = 1000;
 	uint64_t time_msec = timestamp*msec/fTimestampFrequency;

@@ -32,7 +32,7 @@ void MPEG4GenericRTPSource::processFrame(RTPPacketBuffer *packet)
 	uint8_t *buf = (uint8_t *)packet->payload();
 	int len = packet->payloadLen();
 
-	int64_t media_timestamp = packet->extTimestamp() == 0 ? getMediaTimestamp(packet->timestamp()) : packet->extTimestamp();
+	int64_t timestamp = packet->extTimestamp() == 0 ? getRealTimestamp(packet->timestamp()) : packet->extTimestamp();
 
 	unsigned char* headerStart = buf;
 	unsigned packetSize = len;
@@ -80,7 +80,7 @@ void MPEG4GenericRTPSource::processFrame(RTPPacketBuffer *packet)
 		ptr += fAUHeaders[i].size;
 
 		if (fFrameHandlerFunc)
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
-		resetFrameBuf();
+			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+		resetFrameBuffer();
 	}
 }

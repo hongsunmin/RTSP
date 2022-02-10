@@ -1491,6 +1491,8 @@ int RTSPClient::openURL(const char *url, int streamType, int timeout, bool rtpOn
 
 		parseRTSPURLUsernamePassword(url, username, password);
 
+		if (username != NULL && password != NULL) url = parsedURL;
+
 		if (connectToServer(ip_address, port, timeout) < 0)
 			break;
 
@@ -1552,11 +1554,64 @@ int RTSPClient::openURL(const char *url, int streamType, int timeout, bool rtpOn
 				fVideoFps = subsession->videoFPS();
 
 				if (!strcmp(fVideoCodec, "H264")) {
-					char *spropParameterSets = (char *)subsession->fmtp_spropparametersets();
+					char* spropParameterSets = (char*)subsession->fmtp_spropparametersets();
 					if (spropParameterSets) {
 						unsigned int sps_size;
 						fVideoExtraData = parseH264ConfigStr(spropParameterSets, fVideoExtraDataSize, sps_size);
 					}
+				} else if (!strcmp(fVideoCodec, "H265")) {
+					char* props_vps = (char*)subsession->fmtp_spropVps();
+					char* props_sps = (char*)subsession->fmtp_spropSps();
+					char* props_pps = (char*)subsession->fmtp_spropPps();
+
+					uint8_t* extraDataVps = NULL;
+					uint8_t* extraDataSps = NULL;
+					uint8_t* extraDataPps = NULL;
+
+					int extraDataVpsSize = 0;
+					int extraDataSpsSize = 0;
+					int extraDataPpsSize = 0;
+
+					if (props_vps) {
+						unsigned int size1 = 0, size2 = 0;
+						extraDataVps = parseH264ConfigStr(props_vps, size1, size2);
+						extraDataVpsSize = size1;
+
+						//DPRINTF("size : %d %d\n", size1, size2);
+						//for (int i = 0; i < size1; i++) printf("0x%02x ", extraDataVps[i]);
+						//printf("\n");
+					}
+
+					if (props_sps) {
+						unsigned int size1 = 0, size2 = 0;
+						extraDataSps = parseH264ConfigStr(props_sps, size1, size2);
+						extraDataSpsSize = size1;
+
+						//DPRINTF("size : %d %d\n", size1, size2);
+						//for (int i = 0; i < size1; i++) printf("0x%02x ", extraDataSps[i]);
+						//printf("\n");
+					}
+
+					if (props_pps) {
+						unsigned int size1 = 0, size2 = 0;
+						extraDataPps = parseH264ConfigStr(props_pps, size1, size2);
+						extraDataPpsSize = size1;
+
+						//DPRINTF("size : %d %d\n", size1, size2);
+						//for (int i = 0; i < size1; i++) printf("0x%02x ", extraDataPps[i]);
+						//printf("\n");
+					}
+
+					fVideoExtraDataSize = extraDataVpsSize + extraDataSpsSize + extraDataPpsSize;
+					fVideoExtraData = new uint8_t[fVideoExtraDataSize];
+
+					memcpy(fVideoExtraData, extraDataVps, extraDataVpsSize);
+					memcpy(&fVideoExtraData[extraDataVpsSize], extraDataSps, extraDataSpsSize);
+					memcpy(&fVideoExtraData[extraDataVpsSize + extraDataSpsSize], extraDataPps, extraDataPpsSize);
+
+					delete[] extraDataVps;
+					delete[] extraDataSps;
+					delete[] extraDataPps;
 				} else if (!strcmp(fVideoCodec, "MP4V-ES")) {
 					if (subsession->fmtp_config()) {
 						fVideoExtraData = parseGeneralConfigStr((char const*)subsession->fmtp_config(), fVideoExtraDataSize);

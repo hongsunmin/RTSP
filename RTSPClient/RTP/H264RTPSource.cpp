@@ -16,10 +16,10 @@ H264RTPSource::~H264RTPSource()
 
 void H264RTPSource::putStartCode()
 {
-	fFrameBuf[fFrameBufPos++] = 0x00;
-	fFrameBuf[fFrameBufPos++] = 0x00;
-	fFrameBuf[fFrameBufPos++] = 0x00;
-	fFrameBuf[fFrameBufPos++] = 0x01;
+	fFrameBuffer[fFrameBufferPos++] = 0x00;
+	fFrameBuffer[fFrameBufferPos++] = 0x00;
+	fFrameBuffer[fFrameBufferPos++] = 0x00;
+	fFrameBuffer[fFrameBufferPos++] = 0x01;
 }
 
 void H264RTPSource::processFrame(RTPPacketBuffer *packet)
@@ -34,7 +34,7 @@ void H264RTPSource::processFrame(RTPPacketBuffer *packet)
 	uint8_t *buf_ptr = buf;
 	bool isCompleteFrame = false;
 
-	int64_t media_timestamp = packet->extTimestamp() == 0 ? getMediaTimestamp(packet->timestamp()) : packet->extTimestamp();
+	int64_t timestamp = packet->extTimestamp() == 0 ? getRealTimestamp(packet->timestamp()) : packet->extTimestamp();
 
 	uint8_t nalUnitType = (buf[0]&0x1F);
 
@@ -42,7 +42,7 @@ void H264RTPSource::processFrame(RTPPacketBuffer *packet)
 		DPRINTF("nal_type: %d, size: %d\n", nalUnitType, len);
 
 	if (!fIsStartFrame) {
-		if (fExtraData) {
+		if (fExtraDataSize > 0) {
 			putStartCode();
 			offset = trimStartCode(fExtraData, fExtraDataSize);
 			copyToFrameBuffer(&fExtraData[offset], fExtraDataSize - offset);
@@ -105,8 +105,8 @@ void H264RTPSource::processFrame(RTPPacketBuffer *packet)
 			buf_ptr += staplen; len -= staplen;
 
 			if (fFrameHandlerFunc)
-				fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
-			resetFrameBuf();
+				fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+			resetFrameBuffer();
 		}
 		break;
 			 }
@@ -119,8 +119,8 @@ void H264RTPSource::processFrame(RTPPacketBuffer *packet)
 
 	if (isCompleteFrame) {
 		if (fFrameHandlerFunc)
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, media_timestamp, fFrameBuf, fFrameBufPos);
-		resetFrameBuf();
+			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+		resetFrameBuffer();
 	}
 }
 
