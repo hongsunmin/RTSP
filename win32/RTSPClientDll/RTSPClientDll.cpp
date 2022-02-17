@@ -28,11 +28,11 @@ RTSPCLIENTDLL_API int rtspclient_open_url(void *rtspclient, const char *url, int
 	return -1;
 }
 
-RTSPCLIENTDLL_API int rtspclient_play_url(void *rtspclient, DllFrameHandlerFunc *func, void *funcData)
+RTSPCLIENTDLL_API int rtspclient_play_url(void *rtspclient, DllFrameHandlerFunc *func, void *funcData, DllCloseHandlerFunc* closeHandlerFunc, void* closeHandlerFuncData)
 {
 	if (rtspclient) {
 		RTSPClient *pRTSPClient = (RTSPClient *)rtspclient;
-		return pRTSPClient->playURL((FrameHandlerFunc)func, funcData, NULL, NULL, NULL, NULL);
+		return pRTSPClient->playURL((FrameHandlerFunc)func, funcData, closeHandlerFunc, closeHandlerFuncData, NULL, NULL);
 	}
 	return -1;
 }

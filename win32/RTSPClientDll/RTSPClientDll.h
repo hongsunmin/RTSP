@@ -16,11 +16,12 @@
 
 typedef enum DLL_RTP_FRAME_TYPE { DLL_FRAME_TYPE_VIDEO, DLL_FRAME_TYPE_AUDIO, DLL_FRAME_TYPE_ETC };
 typedef void DllFrameHandlerFunc(void *arg, DLL_RTP_FRAME_TYPE frame_type, __int64 timestamp, unsigned char *buf, int len);
+typedef void DllCloseHandlerFunc(void* arg, int err, int result);
 
 RTSPCLIENTDLL_API void* rtspclient_new();
 RTSPCLIENTDLL_API void rtspclient_delete(void *rtspclient);
 RTSPCLIENTDLL_API int rtspclient_open_url(void *rtspclient, const char *url, int conn_type, int timeout);
-RTSPCLIENTDLL_API int rtspclient_play_url(void *rtspclient, DllFrameHandlerFunc *func, void *funcData);
+RTSPCLIENTDLL_API int rtspclient_play_url(void *rtspclient, DllFrameHandlerFunc *func, void *funcData, DllCloseHandlerFunc *closeHandlerFunc, void *closeHandlerFuncData);
 RTSPCLIENTDLL_API void rtspclient_close_url(void *rtspclient);
 RTSPCLIENTDLL_API void rtspclient_set_debug_flag(int flag);
 RTSPCLIENTDLL_API void rtspclient_set_debug_print(int print);

@@ -59,6 +59,11 @@ static void frameHandlerFunc(void *arg, RTP_FRAME_TYPE frame_type, int64_t times
 		fwrite(buf, len, 1, fp_dump);
 }
 
+static void closeHandlerFunc(void* arg, int err, int result)
+{
+	printf("RTSP session disconnected, err : %d, result : %d", err, result);
+}
+
 int main(int argc, char *argv[])
 {
 #ifdef _DEBUG
@@ -76,7 +81,7 @@ int main(int argc, char *argv[])
 	char* strURL = "rtsp://127.0.0.1:8554/h264ESVideoTest";
 	fp_dump = fopen("video.264", "wb");
 #else
-	char* strURL = "rtsp://admin:antsANTS@192.168.140.69/0";
+	char* strURL = "rtsp://admin:antsANTS@192.168.140.103/0";
 	fp_dump = fopen("video.265", "wb");
 #endif
 
@@ -94,9 +99,9 @@ again:
 #endif
 	{
 #ifdef RTSPCLIENT_DLL
-		if (rtspclient_play_url(rtspClient, frameHandlerFunc, rtspClient) == 0)
+		if (rtspclient_play_url(rtspClient, frameHandlerFunc, rtspClient, closeHandlerFunc, rtspClient) == 0)
 #else
-		if (rtspClient->playURL(frameHandlerFunc, rtspClient, NULL, NULL) == 0)
+		if (rtspClient->playURL(frameHandlerFunc, rtspClient, closeHandlerFunc, rtspClient) == 0)
 #endif
 		{
 			char c;
