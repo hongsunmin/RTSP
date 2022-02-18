@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	addServerSessions();
 
 	RTSPServer *rtspServer = RTSPServer::instance();
-	rtspServer->startServer(554);
+	rtspServer->startServer(8554);
 
 	char c;
 	while (c = mygetch() != 'q') {
