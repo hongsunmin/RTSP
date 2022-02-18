@@ -50,16 +50,16 @@ int mygetch(void)
 FILE *fp_dump = NULL;
 
 #ifdef RTSPCLIENT_DLL
-static void frameHandlerFunc(void *arg, DLL_RTP_FRAME_TYPE frame_type, __int64 timestamp, unsigned char *buf, int len)
+static void frameHandler(void *arg, DLL_RTP_FRAME_TYPE frame_type, __int64 timestamp, unsigned char *buf, int len)
 #else
-static void frameHandlerFunc(void *arg, RTP_FRAME_TYPE frame_type, int64_t timestamp, unsigned char *buf, int len)
+static void frameHandler(void *arg, RTP_FRAME_TYPE frame_type, int64_t timestamp, unsigned char *buf, int len)
 #endif
 {
 	if (fp_dump)
 		fwrite(buf, len, 1, fp_dump);
 }
 
-static void closeHandlerFunc(void* arg, int err, int result)
+static void closeHandler(void* arg, int err, int result)
 {
 	printf("RTSP session disconnected, err : %d, result : %d", err, result);
 }
@@ -99,9 +99,9 @@ again:
 #endif
 	{
 #ifdef RTSPCLIENT_DLL
-		if (rtspclient_play_url(rtspClient, frameHandlerFunc, rtspClient, closeHandlerFunc, rtspClient) == 0)
+		if (rtspclient_play_url(rtspClient, frameHandler, rtspClient, closeHandler, rtspClient) == 0)
 #else
-		if (rtspClient->playURL(frameHandlerFunc, rtspClient, closeHandlerFunc, rtspClient) == 0)
+		if (rtspClient->playURL(frameHandler, rtspClient, closeHandler, rtspClient) == 0)
 #endif
 		{
 			char c;

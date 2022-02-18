@@ -104,8 +104,8 @@ void H264RTPSource::processFrame(RTPPacketBuffer *packet)
 
 			buf_ptr += staplen; len -= staplen;
 
-			if (fFrameHandlerFunc)
-				fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+			if (fFrameHandler)
+				fFrameHandler(fFrameHandlerData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
 			resetFrameBuffer();
 		}
 		break;
@@ -118,8 +118,8 @@ void H264RTPSource::processFrame(RTPPacketBuffer *packet)
 	}
 
 	if (isCompleteFrame) {
-		if (fFrameHandlerFunc)
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+		if (fFrameHandler)
+			fFrameHandler(fFrameHandlerData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
 		resetFrameBuffer();
 	}
 }

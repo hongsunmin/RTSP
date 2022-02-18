@@ -12,8 +12,8 @@ RTPSource::RTPSource(int streamType, MediaSubsession &subsession, TaskScheduler 
 : fStreamType(streamType), fRecvBuf(NULL), fRTPPayloadFormat(subsession.rtpPayloadFormat()), fTimestampFrequency(subsession.rtpTimestampFrequency()),
 fSSRC(rand()), fTask(&task), fSvrAddr(0), fRtspSock(NULL), fRtcpChannelId(subsession.rtcpChannelId), fCodecName(NULL),
 fReceptionStatsDB(NULL), fRtcpInstance(NULL),
-fFrameHandlerFunc(NULL), fFrameHandlerFuncData(NULL), fIsStartFrame(false), fBeginFrame(false), fExtraData(NULL), fExtraDataSize(0),
-fRtpHandlerFunc(NULL), fRtpHandlerFuncData(NULL), fRtcpHandlerFunc(NULL), fRtcpHandlerFuncData(NULL), fFrameType(FRAME_TYPE_ETC)
+fFrameHandler(NULL), fFrameHandlerData(NULL), fIsStartFrame(false), fBeginFrame(false), fExtraData(NULL), fExtraDataSize(0),
+fRtpHandler(NULL), fRtpHandlerData(NULL), fRtcpHandler(NULL), fRtcpHandlerData(NULL), fFrameType(FRAME_TYPE_ETC)
 {
 	fReorderingBuffer = new ReorderingPacketBuffer();
 
@@ -101,14 +101,14 @@ void RTPSource::startNetworkReading(FrameHandlerFunc frameHandler, void *frameHa
 									RTPHandlerFunc rtpHandler, void *rtpHandlerData,
 									RTPHandlerFunc rtcpHandler, void *rtcpHandlerData)
 {
-	fFrameHandlerFunc = frameHandler;
-	fFrameHandlerFuncData = frameHandlerData;
+	fFrameHandler = frameHandler;
+	fFrameHandlerData = frameHandlerData;
 
-	fRtpHandlerFunc = rtpHandler;
-	fRtpHandlerFuncData = rtpHandlerData;
+	fRtpHandler = rtpHandler;
+	fRtpHandlerData = rtpHandlerData;
 
-	fRtcpHandlerFunc = rtcpHandler;
-	fRtcpHandlerFuncData = rtcpHandlerData;
+	fRtcpHandler = rtcpHandler;
+	fRtcpHandlerData = rtcpHandlerData;
 
 	if (fRtpSock.isOpened())
 		fTask->turnOnBackgroundReadHandling(fRtpSock.sock(), &incomingRtpPacketHandler, this);
@@ -125,14 +125,14 @@ void RTPSource::stopNetworkReading()
 	if (fRtcpSock.isOpened())
 		fTask->turnOffBackgroundReadHandling(fRtcpSock.sock());
 
-	fFrameHandlerFunc = NULL;
-	fFrameHandlerFuncData = NULL;
+	fFrameHandler = NULL;
+	fFrameHandlerData = NULL;
 
-	fRtpHandlerFunc = NULL;
-	fRtpHandlerFuncData = NULL;
+	fRtpHandler = NULL;
+	fRtpHandlerData = NULL;
 
-	fRtcpHandlerFunc = NULL;
-	fRtcpHandlerFuncData = NULL;
+	fRtcpHandler = NULL;
+	fRtcpHandlerData = NULL;
 
 	fReorderingBuffer->reset();
 }
@@ -211,10 +211,10 @@ void RTPSource::processNextPacket()
 
 		fLastSeqNum = seqnum;
 
-		if (fRtpHandlerFunc)
-			fRtpHandlerFunc(fRtpHandlerFuncData, fTrackId, (char *)nextPacket->buf(), nextPacket->length());
+		if (fRtpHandler)
+			fRtpHandler(fRtpHandlerData, fTrackId, (char *)nextPacket->buf(), nextPacket->length());
 
-		if (fFrameHandlerFunc)
+		if (fFrameHandler)
 			processFrame(nextPacket);
 
 		fReorderingBuffer->releaseUsedPacket(nextPacket);
@@ -245,8 +245,8 @@ void RTPSource::processFrame(RTPPacketBuffer *packet)
 	copyToFrameBuffer(buf, len);
 
 	if (packet->markerBit() == 1 || fLastTimestamp != packet->timestamp()) {
-		if (fFrameHandlerFunc) {
-			fFrameHandlerFunc(fFrameHandlerFuncData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
+		if (fFrameHandler) {
+			fFrameHandler(fFrameHandlerData, fFrameType, timestamp, fFrameBuffer, fFrameBufferPos);
 		}
 		resetFrameBuffer();
 	}
@@ -321,8 +321,8 @@ void RTPSource::rtcpReadHandler(char *buf, int len, struct sockaddr_in &fromAddr
 			RTCPInstance::onExpire(fRtcpInstance);
 	}
 
-	if (fRtcpHandlerFunc)
-		fRtcpHandlerFunc(fRtcpHandlerFuncData, fTrackId, buf, len);
+	if (fRtcpHandler)
+		fRtcpHandler(fRtcpHandlerData, fTrackId, buf, len);
 }
 
 void RTPSource::sendRtcpReport(char *buf, int len)

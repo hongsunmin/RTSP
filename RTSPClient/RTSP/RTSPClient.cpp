@@ -38,7 +38,7 @@ RTSPClient::RTSPClient()
 
 	fLastResponseCode = 0;
 
-	fCloseFunc = NULL; fCloseFuncData = NULL;
+	fCloseHandler = NULL; fCloseHandlerData = NULL;
 
 	fVideoCodec = fAudioCodec = NULL;
 	fVideoWidth = fVideoHeight = fVideoFps = 0;
@@ -52,8 +52,8 @@ RTSPClient::RTSPClient()
 	fIsSendGetParam = false;
 	fLastSendGetParam = 0;
 
-	fRTPReceiveFunc = fRTCPReceiveFunc = NULL;
-	fRTPReceiveFuncData = fRTCPReceiveFuncData = NULL;
+	fRTPReceiveHandler = fRTCPReceiveHandler = NULL;
+	fRTPReceiveHandlerData = fRTCPReceiveHandlerData = NULL;
 
 	fTask = new TaskScheduler();
 }
@@ -85,7 +85,7 @@ void RTSPClient::reset()
 
 	fCurrentAuthenticator.reset();
 
-	fCloseFunc = NULL; fCloseFuncData = NULL;
+	fCloseHandler = NULL; fCloseHandlerData = NULL;
 
 	fVideoCodec = fAudioCodec = NULL;
 	fVideoWidth = fVideoHeight = fVideoFps = 0;
@@ -342,8 +342,8 @@ void RTSPClient::tcpReadError(int result)
 
 	fTask->turnOffBackgroundReadHandling(fRtspSock.sock());
 
-	if (fCloseFunc)
-		fCloseFunc(fCloseFuncData, err, result);
+	if (fCloseHandler)
+		fCloseHandler(fCloseHandlerData, err, result);
 }
 
 void RTSPClient::tcpReadHandler(void *instance, int)
@@ -1647,10 +1647,10 @@ int RTSPClient::openURL(const char *url, int streamType, int timeout, bool rtpOn
 	return 0;
 }
 
-int RTSPClient::playURL(FrameHandlerFunc func, void *funcData, 
-						OnCloseFunc onCloseFunc, void *onCloseFuncData, 
-						OnPacketReceiveFunc onRTPReceiveFunc, void *onRTPReceiveFuncData,
-						OnPacketReceiveFunc onRTCPReceiveFunc, void *onRTCPReceiveFuncData)
+int RTSPClient::playURL(FrameHandlerFunc frameHandler, void *frameHandlerData, 
+						CloseHandlerFunc closeHandler, void *closeHandlerData, 
+						PacketReceiveHandlerFunc rtpReceiveHandler, void *rtpReceiveHandlerData,
+						PacketReceiveHandlerFunc rtcpReceiveHandler, void *rtcpReceiveHandlerData)
 {
 	if (!fMediaSession)
 		return -1;
@@ -1658,21 +1658,21 @@ int RTSPClient::playURL(FrameHandlerFunc func, void *funcData,
 	if (!playMediaSession(*fMediaSession, true))
 		return -1;
 
-	fCloseFunc = onCloseFunc;
-	fCloseFuncData = onCloseFuncData;
+	fCloseHandler = closeHandler;
+	fCloseHandlerData = closeHandlerData;
 
-	fRTPReceiveFunc = onRTPReceiveFunc;
-	fRTPReceiveFuncData = onRTPReceiveFuncData;
+	fRTPReceiveHandler = rtpReceiveHandler;
+	fRTPReceiveHandlerData = rtpReceiveHandlerData;
 
-	fRTCPReceiveFunc = onRTCPReceiveFunc;
-	fRTCPReceiveFuncData = onRTCPReceiveFuncData;
+	fRTCPReceiveHandler = rtcpReceiveHandler;
+	fRTCPReceiveHandlerData = rtcpReceiveHandlerData;
 
 	MediaSubsessionIterator *iter = new MediaSubsessionIterator(*fMediaSession);
 	MediaSubsession *subsession = NULL;
 	while ((subsession=iter->next()) != NULL)
 	{
 		if (subsession->fRTPSource)
-			subsession->fRTPSource->startNetworkReading(func, funcData, rtpHandlerCallback, this, rtcpHandlerCallback, this);
+			subsession->fRTPSource->startNetworkReading(frameHandler, frameHandlerData, rtpHandlerCallback, this, rtcpHandlerCallback, this);
 	}
 
 	if (fTCPStreamIdCount > 0) fTCPReadingState = AWAITING_DOLLAR;
@@ -1810,16 +1810,16 @@ void RTSPClient::rtpHandlerCallback(void *arg, char *trackId, char *buf, int len
 		}
 	}
 
-	if (client->fRTPReceiveFunc)
-		client->fRTPReceiveFunc(client->fRTPReceiveFuncData, trackId, buf, len);
+	if (client->fRTPReceiveHandler)
+		client->fRTPReceiveHandler(client->fRTPReceiveHandlerData, trackId, buf, len);
 }
 
 void RTSPClient::rtcpHandlerCallback(void *arg, char *trackId, char *buf, int len)
 {
 	RTSPClient *client = (RTSPClient *)arg;
 
-	if (client->fRTCPReceiveFunc)
-		client->fRTCPReceiveFunc(client->fRTCPReceiveFuncData, trackId, buf, len);
+	if (client->fRTCPReceiveHandler)
+		client->fRTCPReceiveHandler(client->fRTCPReceiveHandlerData, trackId, buf, len);
 }
 
 void RTSPClient::sendGetParam()

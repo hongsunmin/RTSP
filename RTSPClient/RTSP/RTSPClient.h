@@ -9,8 +9,8 @@
 #define RECV_BUF_SIZE			(1024*1024)
 #define SEND_GET_PARAM_DURATION	(50)
 
-typedef void (*OnCloseFunc)(void *arg, int err, int result);
-typedef void (*OnPacketReceiveFunc)(void *arg, const char *trackId, char *buf, int len);
+typedef void (*CloseHandlerFunc)(void *arg, int err, int result);
+typedef void (*PacketReceiveHandlerFunc)(void *arg, const char *trackId, char *buf, int len);
 
 class RTPSource;
 
@@ -21,10 +21,10 @@ public:
 	virtual ~RTSPClient();
 
 	int openURL(const char *url, int streamType, int timeout = 2, bool rtpOnly = false);
-	int playURL(FrameHandlerFunc func, void *funcData, 
-		OnCloseFunc onCloseFunc, void *onCloseFuncData,
-		OnPacketReceiveFunc onRTPReceiveFunc = NULL, void *onRTPReceiveFuncData = NULL,
-		OnPacketReceiveFunc onRTCPReceiveFunc = NULL, void *onRTCPReceiveFuncData = NULL);
+	int playURL(FrameHandlerFunc frameHandler, void *frameHandlerData, 
+		CloseHandlerFunc closeHandler, void *closeHandlerFunc,
+		PacketReceiveHandlerFunc rtpReceiveHandler = NULL, void *rtpReceiveHandlerData = NULL,
+		PacketReceiveHandlerFunc rtcpReceiveHandler = NULL, void *rtcpReceiveHandlerData = NULL);
 	void closeURL();
 	void sendGetParam();
 	int sendPause();
@@ -167,8 +167,8 @@ protected:
 
 	unsigned		fLastResponseCode;
 
-	OnCloseFunc		fCloseFunc;
-	void*			fCloseFuncData;
+	CloseHandlerFunc	fCloseHandler;
+	void*				fCloseHandlerData;
 
 	const char*		fVideoCodec;
 	const char*		fAudioCodec;
@@ -188,10 +188,10 @@ protected:
 	time_t			fLastSendGetParam;	// GET_PARAMETER polling time
 
 	// for rtsp server
-	OnPacketReceiveFunc	fRTPReceiveFunc;
-	void*				fRTPReceiveFuncData;
-	OnPacketReceiveFunc	fRTCPReceiveFunc;
-	void*				fRTCPReceiveFuncData;
+	PacketReceiveHandlerFunc	fRTPReceiveHandler;
+	void*						fRTPReceiveHandlerData;
+	PacketReceiveHandlerFunc	fRTCPReceiveHandler;
+	void*						fRTCPReceiveHandlerData;
 };
 
 #endif

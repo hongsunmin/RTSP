@@ -86,8 +86,8 @@ protected:
 	
 	uint8_t*			fFrameBuffer;
 	int					fFrameBufferPos;
-	FrameHandlerFunc	fFrameHandlerFunc;
-	void*				fFrameHandlerFuncData;
+	FrameHandlerFunc	fFrameHandler;
+	void*				fFrameHandlerData;
 
 	// TCP 일때만 사용
 	MySock*	fRtspSock;
@@ -100,11 +100,11 @@ protected:
 	TaskScheduler*	fTask;
 	char*			fRecvBuf;
 
-	RTPHandlerFunc	fRtpHandlerFunc;
-	void*			fRtpHandlerFuncData;
+	RTPHandlerFunc	fRtpHandler;
+	void*			fRtpHandlerData;
 
-	RTPHandlerFunc	fRtcpHandlerFunc;
-	void*			fRtcpHandlerFuncData;
+	RTPHandlerFunc	fRtcpHandler;
+	void*			fRtcpHandlerData;
 };
 
 #endif

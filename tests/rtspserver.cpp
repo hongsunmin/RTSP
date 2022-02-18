@@ -42,7 +42,7 @@ void addServerSessions()
 	streamers[0]->run();
 
 	streamers[1] = new RTSPLiveStreamer();
-	streamers[1]->open("rtsp://admin:antsANTS@192.168.140.69/0", 0, "stream2");
+	streamers[1]->open("rtsp://admin:antsANTS@192.168.140.103/0", 0, "stream2");
 	streamers[1]->run();
 }
 
