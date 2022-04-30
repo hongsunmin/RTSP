@@ -943,7 +943,7 @@ void RTSPClient::constructSubsessionURL(MediaSubsession const& subsession,
 	} else {
 		unsigned prefixLen = strlen(prefix);
 		unsigned suffixLen = strlen(suffix);
-		separator = ((prefixLen > 0 && prefix[prefixLen-1] == '/') || (suffixlen > 0 && suffix[0] == '/')) ? "" : "/";
+		separator = ((prefixLen > 0 && prefix[prefixLen-1] == '/') || (suffixLen > 0 && suffix[0] == '/')) ? "" : "/";
 	}
 }
 
