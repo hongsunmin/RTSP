@@ -7,6 +7,9 @@
 #elif defined(LINUX)
 #include <string.h>
 #endif
+#if defined __has_include && __has_include (<android/ndk-version.h>)
+#include <android/ndk-version.h>
+#endif
 
 #define MAKE_SOCKADDR_IN(var,adr,prt) /*adr,prt must be in network order*/\
     struct sockaddr_in var;\
@@ -453,7 +456,7 @@ bool socketJoinGroupSSM(int sock, unsigned int groupAddress, unsigned int source
 	if (!isMulticastAddress(groupAddress)) return true; // ignore this case
 
 	struct ip_mreq_source imr;
-#ifdef ANDROID
+#if defined(ANDROID) && __NDK_MAJOR__ < 17
     imr.imr_multiaddr = groupAddress;
     imr.imr_sourceaddr = sourceFilterAddr;
     imr.imr_interface = INADDR_ANY;
@@ -475,7 +478,7 @@ bool socketLeaveGroupSSM(int sock, unsigned int groupAddress, unsigned int sourc
 	if (!isMulticastAddress(groupAddress)) return true; // ignore this case
 
 	struct ip_mreq_source imr;
-#ifdef ANDROID
+#if defined(ANDROID) && __NDK_MAJOR__ < 17
     imr.imr_multiaddr = groupAddress;
     imr.imr_sourceaddr = sourceFilterAddr;
     imr.imr_interface = INADDR_ANY;
