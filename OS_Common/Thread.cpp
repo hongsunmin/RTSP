@@ -14,6 +14,8 @@ int THREAD_JOIN(THREAD *thread)
 {
 #ifdef WIN32
 	return WaitForSingleObject(*thread, INFINITE) == WAIT_FAILED ? -1 : 0;
+#elif defined(ANDROID)
+    return pthread_detach(*thread);
 #else
 	int status;
 	return pthread_join(*thread, (void **)&status);
